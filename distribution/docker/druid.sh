@@ -38,6 +38,23 @@
 # - DRUID_CONFIG_COMMON -- full path to a file for druid 'common' properties
 # - DRUID_CONFIG_${service} -- full path to a file for druid 'service' properties
 
+myuid=$(id -u)
+mygid=$(id -g)
+uidentry=$(getent passwd $myuid)
+
+echo "Attempting to write to /etc/passwd since UIDEntry: $uidentry, UID: $myuid, GID: $mygid"
+if [ -z "$uidentry" ] ; then
+    # assumes /etc/passwd has root-group (gid 0) ownership
+     cat /etc/passwd | sed -e "s/^$myuid:/builder:/" > /tmp/passwd
+     echo "$myuid:x:$myuid:$mygid:,,,:/home/$myuid:/bin/bash" >> /tmp/passwd
+     cat /tmp/passwd >> /etc/passwd
+     rm /tmp/passwd
+    echo "User Info added to /etc/passwd"
+fi
+
+echo "Locking further alterations"
+chmod 400 /etc/passwd
+
 set -e
 SERVICE="$1"
 

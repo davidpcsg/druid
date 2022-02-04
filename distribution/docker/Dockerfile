@@ -23,9 +23,6 @@ FROM maven:3.8.1-jdk-11-slim as builder
 # This can be unset if the tarball was already built outside of Docker
 ARG BUILD_FROM_SOURCE="true"
 
-RUN chgrp -R 0 "/etc/passwd"; \
-    chmod -R g+rwX "/etc/passwd"
-
 RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get -qq update \
     && apt-get -qq -y install --no-install-recommends python3 python3-yaml
@@ -66,6 +63,10 @@ COPY distribution/docker/druid.sh /druid.sh
 RUN mkdir /opt/druid/var /opt/shared \
  && chown druid:druid /opt/druid/var /opt/shared \
  && chmod 775 /opt/druid/var /opt/shared
+
+# create necessary permissions
+RUN chgrp -R 0 "/var" "/opt"; \
+    chmod -R g+rwX "/var" "/opt"
 
 USER druid
 VOLUME /opt/druid/var

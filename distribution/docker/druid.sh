@@ -41,23 +41,6 @@
 set -e
 SERVICE="$1"
 
-myuid=$(id -u)
-mygid=$(id -g)
-uidentry=$(getent passwd $myuid)
-
-echo "Attempting to write to /etc/passwd since UIDEntry: $uidentry, UID: $myuid, GID: $mygid"
-if [ -z "$uidentry" ] ; then
-    # assumes /etc/passwd has root-group (gid 0) ownership
-     cat /etc/passwd | sed -e "s/^$myuid:/builder:/" > /tmp/passwd
-     echo "$myuid:x:$myuid:$mygid:,,,:/home/$myuid:/bin/bash" >> /tmp/passwd
-     cat /tmp/passwd >> /etc/passwd
-     rm /tmp/passwd
-    echo "User Info added to /etc/passwd"
-fi
-
-echo "Locking further alterations"
-chmod 400 /etc/passwd
-
 echo "$(date -Is) startup service $SERVICE"
 
 # We put all the config in /tmp/conf to allow for a
